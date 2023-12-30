@@ -14,5 +14,25 @@ export const getLikes = (req, res) => {
 }
 
 export const addLike = (req, res) => {
-    
+    try {
+        const { postId } = req.body;
+        const token = req.cookies.accessToken;
+        if (!token)
+            return res.status(401).json("Not logged in")
+        jwt.verify(token, "secretkey", (err, userInfo) => {
+            if (err)
+                return res.status(401).json("Token invalid")
+            const query = "INSERT INTO likes (`userId`, `postId`) VALUES (?)"
+            const values = [userInfo.id, postId]
+            db.query(query, [values], (err, data) => {
+                return res.status(200).json("Post has been liked")
+            })
+        })
+        
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json(err)
+    }
 }
+
+
